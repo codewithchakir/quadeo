@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class OwnerMiddleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+
+        $user = $request->user();
+
+        if ($user->role !== 'owner') {
+            return response()->json(['message' => 'Owner access required'], 403);
+        }
+
+        if ($user->status !== 'approved') {
+            return response()->json(['message' => 'Account pending approval'], 403);
+        }
+
+        return $next($request);
+    }
+}

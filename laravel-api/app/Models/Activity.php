@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Activity extends Model
 {
@@ -19,6 +20,21 @@ class Activity extends Model
         'location',
         'image',
     ];
+
+    protected $appends = ['image_urls'];
+
+    public function getImageUrlsAttribute()
+    {
+        $imagePaths = json_decode($this->image, true) ?? [];
+        $urls = [];
+        
+        foreach ($imagePaths as $path) {
+            // Use asset() helper to generate full URL
+            $urls[] = asset('storage/' . $path);
+        }
+        
+        return $urls;
+    }
 
     public function owner()
     {

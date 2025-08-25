@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\Activity;
+use App\Notifications\NewBookingNotification;
+use Illuminate\Support\Facades\Notification;
 
 class BookingController extends Controller
 {
@@ -36,6 +39,10 @@ class BookingController extends Controller
         ]);
 
         $booking = Booking::create($validated);
+
+        $activity = Activity::with('owner')->find($validated['activity_id']);
+
+        Notification::send($activity->owner, new NewBookingNotification($booking));
 
         return response()->json([
             'message' => 'Booking created successfully',

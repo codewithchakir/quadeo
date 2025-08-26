@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
+
+    public function allOwners()
+    {
+        return User::where('role', 'owner')->get();
+    }
+
     public function pendingOwners()
     {
         return User::where('role', 'owner')->where('status', 'pending')->get();

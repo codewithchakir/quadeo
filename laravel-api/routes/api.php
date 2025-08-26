@@ -47,6 +47,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware(['admin'])->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard']);
         Route::get('/stats', [AdminController::class, 'stats']);
+        Route::get('/all-owners', [AdminController::class, 'allOwners']);
         Route::get('/pending-owners', [AdminController::class, 'pendingOwners']);
         Route::post('/approve-owner/{id}', [AdminController::class, 'approveOwner']);
         Route::post('/reject-owner/{id}', [AdminController::class, 'rejectOwner']);

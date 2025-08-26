@@ -15,7 +15,7 @@ class BookingController extends Controller
     
     public function index()
     {
-        $bookings = Booking::with('activity')
+        $bookings = Booking::with('activity.owner')
             ->when(auth()->user()->role === 'owner', function ($query) {
                 return $query->whereHas('activity', function ($q) {
                     $q->where('user_id', auth()->id());

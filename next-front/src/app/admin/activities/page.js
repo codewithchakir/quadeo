@@ -267,7 +267,7 @@ export default function ActivitiesManagement() {
                       {activity.location}
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">${activity.price}</div>
+                      <div className="font-medium">{activity.price} DH</div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button 
@@ -334,7 +334,7 @@ export default function ActivitiesManagement() {
                       </div>
                       <div className="flex items-center">
                         <DollarSign className="w-4 h-4 mr-2 text-muted-foreground" />
-                        <span>Price: ${selectedActivity.price}</span>
+                        <span>Price: {selectedActivity.price} DH</span>
                       </div>
                     </div>
                   </div>

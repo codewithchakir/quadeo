@@ -2,19 +2,17 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { 
   Home, 
   Users, 
   Package,
-  Calendar,
-  Tag,
   LogOut
 } from 'lucide-react';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 
-export default function AdminLayout({ children }) {
+export default function OwnerLayout({ children }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -29,7 +27,7 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <ProtectedRoute requiredRole="admin">
+    <ProtectedRoute requiredRole="owner">
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         {/* Sidebar */}
@@ -38,7 +36,7 @@ export default function AdminLayout({ children }) {
             {/* Logo */}
             <div className="p-4 border-b">
               <h1 className="text-2xl font-bold text-primary">quadeo</h1>
-              <p className="text-sm text-muted-foreground">Admin Panel</p>
+              <p className="text-sm text-muted-foreground">Owner Panel</p>
             </div>
 
             {/* Navigation */}
@@ -48,28 +46,11 @@ export default function AdminLayout({ children }) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton 
-                      onClick={() => handleNavigation('/admin/dashboard')}
-                      isActive={pathname === '/admin/dashboard'}
+                      onClick={() => handleNavigation('/owner/dashboard')}
+                      isActive={pathname === '/owner/dashboard'}
                     >
                       <Home className="w-4 h-4" />
                       <span>Overview</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel>User Management</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton 
-                      onClick={() => handleNavigation('/admin/owners')}
-                      isActive={pathname === '/admin/owners'}
-                    >
-                      <Users className="w-4 h-4" />
-                      <span>All Owners</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -82,29 +63,28 @@ export default function AdminLayout({ children }) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton 
-                      onClick={() => handleNavigation('/admin/activities')}
-                      isActive={pathname.includes('/admin/activities')}
+                      onClick={() => handleNavigation('/owner/activities')}
+                      isActive={pathname === '/owner/activities'}
+                    >
+                      <Users className="w-4 h-4" />
+                      <span>My Activities</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Booking Management</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => handleNavigation('/owner/bookings')}
+                      isActive={pathname.includes('/owner/bookings')}
                     >
                       <Package className="w-4 h-4" />
-                      <span>Activities</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton 
-                      onClick={() => handleNavigation('/admin/bookings')}
-                      isActive={pathname.includes('/admin/bookings')}
-                    >
-                      <Calendar className="w-4 h-4" />
-                      <span>Bookings</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton 
-                      onClick={() => handleNavigation('/admin/categories')}
-                      isActive={pathname.includes('/admin/categories')}
-                    >
-                      <Tag className="w-4 h-4" />
-                      <span>Categories</span>
+                      <span>All Bookings</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

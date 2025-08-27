@@ -1,4 +1,3 @@
-// src/app/page.js
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,6 +19,31 @@ export default function Home() {
   
   const featuredActivities = homeData?.featured_activities || [];
   const categories = homeData?.categories || [];
+  const stats = homeData?.stats || {
+    total_activities: 0,
+    total_owners: 0,
+    total_categories: 0
+  };
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check if window is available (client-side)
+    if (typeof window !== 'undefined') {
+      const checkIsMobile = () => {
+        setIsMobile(window.innerWidth < 768); 
+      };
+      
+      // Initial check
+      checkIsMobile();
+      
+      // Add event listener for window resize
+      window.addEventListener('resize', checkIsMobile);
+      
+      // Cleanup
+      return () => window.removeEventListener('resize', checkIsMobile);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -74,65 +98,67 @@ export default function Home() {
                 </Link>
               </div>
 
-              {/* Right Column - Slider */}
-              <div className="relative">
-                <ClientOnly>
-                  <Swiper
-                    modules={[Autoplay, Navigation, Pagination]}
-                    spaceBetween={20}
-                    slidesPerView={1}
-                    autoplay={{ delay: 4000 }}
-                    navigation
-                    pagination={{ clickable: true }}
-                    className="hero-slider rounded-2xl overflow-hidden"
-                  >
-                    {featuredActivities.map((activity) => (
-                      <SwiperSlide key={activity.id}>
-                        <div className="relative h-96 md:h-112 rounded-2xl overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                          {activity.image_urls && activity.image_urls.length > 0 ? (
-                            <img
-                              src={activity.image_urls[0]}
-                              alt={activity.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
-                              <div className="text-center text-muted-foreground">
-                                <svg
-                                  className="w-16 h-16 mx-auto mb-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={1}
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                  />
-                                </svg>
-                                <p className="text-sm">No image available</p>
+              {/* Right Column - Slider (Hidden on mobile) */}
+              {!isMobile && (
+                <div className="relative hidden md:block">
+                  <ClientOnly>
+                    <Swiper
+                      modules={[Autoplay, Navigation, Pagination]}
+                      spaceBetween={20}
+                      slidesPerView={1}
+                      autoplay={{ delay: 4000 }}
+                      navigation
+                      pagination={{ clickable: true }}
+                      className="hero-slider rounded-2xl overflow-hidden"
+                    >
+                      {featuredActivities.map((activity) => (
+                        <SwiperSlide key={activity.id}>
+                          <div className="relative h-96 md:h-112 rounded-2xl overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                            {activity.image_urls && activity.image_urls.length > 0 ? (
+                              <img
+                                src={activity.image_urls[0]}
+                                alt={activity.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+                                <div className="text-center text-muted-foreground">
+                                  <svg
+                                    className="w-16 h-16 mx-auto mb-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={1}
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                  </svg>
+                                  <p className="text-sm">No image available</p>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                          <div className="absolute bottom-6 left-6 right-6 text-white">
-                            <h3 className="text-xl font-semibold mb-2">{activity.title}</h3>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <span className="text-lg font-bold">{activity.price} DH</span>
-                                <span className="text-sm">• {activity.duration}</span>
+                            )}
+                            <div className="absolute bottom-6 left-6 right-6 text-white">
+                              <h3 className="text-xl font-semibold mb-2">{activity.title}</h3>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-4">
+                                  <span className="text-lg font-bold">{activity.price} DH</span>
+                                  <span className="text-sm">• {activity.duration}</span>
+                                </div>
+                                <span className="text-sm">{activity.location}</span>
                               </div>
-                              <span className="text-sm">{activity.location}</span>
                             </div>
                           </div>
-                        </div>
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                </ClientOnly>
-              </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                  </ClientOnly>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -164,15 +190,11 @@ export default function Home() {
                 {categories.map((category) => (
                   <SwiperSlide key={category.id}>
                     <Link 
-                      href={`/activities?category=${category.name.toLowerCase().replace(' ', '-')}`}
+                      href={`/activities?category_id=${category.id}`}
                       className="block group"
                     >
                       <div className="bg-card border border-border rounded-xl p-6 text-center hover:border-primary transition-colors duration-200">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                          <span className="text-2xl font-bold text-primary">
-                            {category.name.charAt(0)}
-                          </span>
-                        </div>
+                        
                         <h3 className="font-semibold text-foreground mb-2">{category.name}</h3>
                         <p className="text-sm text-muted-foreground">
                           {category.activities_count} activity{category.activities_count !== 1 ? 'ies' : ''}
@@ -238,19 +260,83 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Owner CTA Section */}
+        {/* About Us Section */}
+        <section className="py-16 bg-muted">
+          <div className="container mx-auto px-6">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              {/* Left Column - Image Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl overflow-hidden h-64 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                  <img src="quad.jpg" alt="About Us" className="w-full h-full object-cover" />
+                </div>
+                <div className="rounded-2xl overflow-hidden h-48 bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mt-8">
+                  <img src="agafay-camel.jpg" alt="About Us" className="w-full h-full object-cover" />
+                </div>
+                <div className="rounded-2xl overflow-hidden h-48 bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                  <img src="parap-marrakech.jpg" alt="About Us" className="w-full h-full object-cover" />
+                </div>
+                <div className="rounded-2xl overflow-hidden h-64 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mt-8">
+                <img src="agafay-quad.jpg" alt="About Us" className="w-full h-full object-cover" />
+                </div>
+              </div>
+              {/* Right Column - Text and Stats */}
+              <div className="text-center md:text-left">
+                <h2 className="text-3xl font-bold text-foreground mb-6">About AdventureHub</h2>
+                <p className="text-muted-foreground mb-8">
+                  We're passionate about connecting adventure seekers with unforgettable experiences. Our platform brings together the best activity providers across Morocco, offering everything from desert excursions to coastal adventures.
+                </p>
+                <p className="text-muted-foreground mb-10">
+                  With a commitment to quality, safety, and authentic experiences, we've built a trusted community of adventurers and providers who share our love for exploration.
+                </p>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary mb-2">{stats.total_activities}</div>
+                    <div className="text-sm text-muted-foreground">Activities</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary mb-2">{stats.total_owners}</div>
+                    <div className="text-sm text-muted-foreground">Partners</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary mb-2">{stats.total_categories}</div>
+                    <div className="text-sm text-muted-foreground">Categories</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Owner CTA Section - Updated with Image */}
         <section className="py-16 bg-primary/10">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Are You an Activity Provider?</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-              Register now and start listing your activities to reach more customers. Grow your business with our platform.
-            </p>
-            <Link 
-              href="/auth/register?type=owner"
-              className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-2xl font-medium transition-colors duration-200"
-            >
-              Become a Partner
-            </Link>
+          <div className="container mx-auto px-6">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              {/* Left Column - Content */}
+              <div className="text-center md:text-left">
+                <h2 className="text-3xl font-bold text-foreground mb-4">Are You an Activity Provider?</h2>
+                <p className="text-muted-foreground mb-6">
+                  Register now and start listing your activities to reach more customers. Grow your business with our platform and join our community of trusted adventure providers.
+                </p>
+                <p className="text-muted-foreground mb-8">
+                  We handle the bookings, payments, and marketing so you can focus on delivering amazing experiences to your customers.
+                </p>
+                <Link 
+                  href="/auth/register?type=owner"
+                  className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-2xl font-medium transition-colors duration-200"
+                >
+                  Become a Partner
+                </Link>
+              </div>
+
+              {/* Right Column - Image */}
+              <div className="hidden md:block">
+                <div className="rounded-2xl overflow-hidden h-80 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                  <img src="login-bg.jpeg" alt="Owner CTA" className="w-full h-full object-cover" />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>

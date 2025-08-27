@@ -46,6 +46,11 @@ class Activity extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function getBookingsCountAttribute()
+    {
+        return $this->bookings()->count();
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class);

@@ -88,8 +88,9 @@ export default function BookingsManagement() {
       pending: bookings.filter(b => b.status === 'pending').length,
       confirmed: bookings.filter(b => b.status === 'confirmed').length,
       cancelled: bookings.filter(b => b.status === 'cancelled').length,
+      completed: bookings.filter(b => b.status === 'completed').length,
       totalRevenue: bookings
-        .filter(b => b.status === 'confirmed')
+        .filter(b => b.status === 'completed')
         .reduce((sum, booking) => sum + (booking.activity?.price * booking.guests || 0), 0)
     };
     setStats(statsData);
@@ -190,7 +191,7 @@ export default function BookingsManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalRevenue.toLocaleString()} DH</div>
-            <p className="text-xs text-muted-foreground">From confirmed bookings</p>
+            <p className="text-xs text-muted-foreground">From completed bookings</p>
           </CardContent>
         </Card>
       </div>

@@ -14,6 +14,7 @@ class ActivityController extends Controller
     public function index()
     {
         $activities = Activity::with(['category', 'owner'])
+            ->withCount('bookings')
             ->when(auth()->user()->role === 'owner', function ($query) {
                 return $query->where('user_id', auth()->id());
             })
@@ -80,21 +81,36 @@ class ActivityController extends Controller
             'duration' => 'nullable|string',
             'location' => 'nullable|string',
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'existing_images' => 'nullable|array'
         ]);
 
-        $imagePaths = json_decode($activity->image, true) ?? [];
-        if ($request->hasFile('images')) {
-            foreach ($imagePaths as $oldImage) {
-                Storage::disk('public')->delete($oldImage);
-            }
+        // Get current images
+        $currentImages = json_decode($activity->image, true) ?? [];
 
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('activities', 'public');
-                $imagePaths[] = $path;
+        // Handle existing images - only keep the ones that are sent
+        $existingImages = $request->input('existing_images', []);
+        $imagesToKeep = array_intersect($currentImages, $existingImages);
+
+        // Delete images that were removed
+        $imagesToDelete = array_diff($currentImages, $existingImages);
+        foreach ($imagesToDelete as $imageToDelete) {
+            if (Storage::disk('public')->exists($imageToDelete)) {
+                Storage::disk('public')->delete($imageToDelete);
             }
         }
+
+        // Handle new image uploads
+        $newImagePaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('activities', 'public');
+                $newImagePaths[] = $path;
+            }
+        }
+
+        // Combine kept and new images
+        $allImagePaths = array_merge($imagesToKeep, $newImagePaths);
 
         $activity->update([
             'category_id' => $validated['category_id'],
@@ -103,7 +119,7 @@ class ActivityController extends Controller
             'price' => $validated['price'],
             'duration' => $validated['duration'],
             'location' => $validated['location'],
-            'image' => $imagePaths ? json_encode($imagePaths) : null,
+            'image' => !empty($allImagePaths) ? json_encode($allImagePaths) : null,
         ]);
 
         return response()->json([

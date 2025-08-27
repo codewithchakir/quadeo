@@ -9,7 +9,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
-  // Ensure this only runs on client side to prevent hydration mismatch
   useEffect(() => {
     setIsClient(true);
   }, []);

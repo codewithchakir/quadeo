@@ -151,7 +151,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${dashboardData?.stats?.total_revenue?.toLocaleString() || '0'}
+              {dashboardData?.stats?.total_revenue?.toLocaleString() || '0'} DH
             </div>
             <p className="text-xs text-muted-foreground">
               From all completed bookings
@@ -237,7 +237,7 @@ export default function AdminDashboard() {
                     <TableCell className="font-medium">{activity.title}</TableCell>
                     <TableCell>{activity.owner?.name}</TableCell>
                     <TableCell>{activity.category?.name}</TableCell>
-                    <TableCell>${activity.price}</TableCell>
+                    <TableCell>{activity.price} DH</TableCell>
                     <TableCell className="max-w-[120px] truncate">{activity.location}</TableCell>
                   </TableRow>
                 ))}
@@ -399,7 +399,7 @@ export default function AdminDashboard() {
                     </TableCell>
                     <TableCell className="max-w-[150px] truncate">{booking.activity?.title}</TableCell>
                     <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
-                    <TableCell>${(booking.activity?.price * booking.guests).toFixed(2)}</TableCell>
+                    <TableCell>{(booking.activity?.price * booking.guests).toFixed(2)} DH</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

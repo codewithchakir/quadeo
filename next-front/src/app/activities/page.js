@@ -15,6 +15,7 @@ export default function ActivitiesPage() {
   
   const [filters, setFilters] = useState({
     category_id: categoryParam || '',
+    location: '',
     min_price: '',
     max_price: ''
   });

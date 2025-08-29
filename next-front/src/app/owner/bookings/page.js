@@ -1,4 +1,3 @@
-// Bookings Page (bookings/page.js)
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,7 +11,9 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Filter
+  Filter,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import api from '@/lib/axios';
 import { toast } from 'react-toastify';
@@ -22,6 +23,7 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -66,7 +68,7 @@ export default function BookingsPage() {
     };
 
     return (
-      <Badge variant={variants[status] || 'secondary'} className="flex items-center">
+      <Badge variant={variants[status] || 'secondary'} className="flex items-center text-xs">
         {icons[status]}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
@@ -86,17 +88,58 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Bookings</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Bookings</h1>
           <p className="text-muted-foreground">Manage all bookings for your activities</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {/* Mobile filter toggle */}
+          <Button 
+            variant="outline" 
+            className="sm:hidden"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </Button>
+          
+          {/* Desktop filter buttons */}
+          <div className={`hidden sm:flex gap-2 ${showFilters ? 'flex' : 'hidden'} sm:flex`}>
+            <Button 
+              variant={statusFilter === 'all' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => setStatusFilter('all')}
+            >
+              All
+            </Button>
+            <Button 
+              variant={statusFilter === 'pending' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => setStatusFilter('pending')}
+            >
+              Pending
+            </Button>
+            <Button 
+              variant={statusFilter === 'confirmed' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => setStatusFilter('confirmed')}
+            >
+              Confirmed
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile filter buttons */}
+      {showFilters && (
+        <div className="sm:hidden grid grid-cols-2 gap-2">
           <Button 
             variant={statusFilter === 'all' ? 'default' : 'outline'} 
             size="sm"
             onClick={() => setStatusFilter('all')}
+            className="w-full"
           >
             All
           </Button>
@@ -104,6 +147,7 @@ export default function BookingsPage() {
             variant={statusFilter === 'pending' ? 'default' : 'outline'} 
             size="sm"
             onClick={() => setStatusFilter('pending')}
+            className="w-full"
           >
             Pending
           </Button>
@@ -111,11 +155,12 @@ export default function BookingsPage() {
             variant={statusFilter === 'confirmed' ? 'default' : 'outline'} 
             size="sm"
             onClick={() => setStatusFilter('confirmed')}
+            className="w-full"
           >
             Confirmed
           </Button>
         </div>
-      </div>
+      )}
 
       {filteredBookings.length === 0 ? (
         <Card>
@@ -133,7 +178,7 @@ export default function BookingsPage() {
         </Card>
       ) : (
         <Card>
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <CardTitle>
               {statusFilter === 'all' ? 'All Bookings' : `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings`}
             </CardTitle>
@@ -141,39 +186,29 @@ export default function BookingsPage() {
               {filteredBookings.length} booking{filteredBookings.length !== 1 ? 's' : ''} found
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Activity</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Guests</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredBookings.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{booking.client_name}</div>
-                        <div className="text-sm text-muted-foreground">{booking.client_email}</div>
+          <CardContent className="px-0 sm:px-6">
+            {/* Mobile card layout */}
+            <div className="block lg:hidden space-y-4">
+              {filteredBookings.map((booking) => (
+                <div key={booking.id} className="bg-gray-50 rounded-lg p-4">
+                  <div className="space-y-3">
+                    <div>
+                      <div className="font-medium">{booking.client_name}</div>
+                      <div className="text-sm text-muted-foreground">{booking.client_email}</div>
+                      {booking.client_phone && (
                         <div className="text-sm text-muted-foreground">{booking.client_phone}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-[150px] truncate">
-                      {booking.activity?.title}
-                    </TableCell>
-                    <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
-                    <TableCell>{booking.guests}</TableCell>
-                    <TableCell>{(booking.activity?.price * booking.guests).toFixed(2)} DH</TableCell>
-                    <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                    <TableCell className="text-right">
+                      )}
+                    </div>
+                    <div className="text-sm">
+                      <div className="truncate">Activity: {booking.activity?.title}</div>
+                      <div>Date: {new Date(booking.date).toLocaleDateString()}</div>
+                      <div>Guests: {booking.guests}</div>
+                      <div>Amount: {(booking.activity?.price * booking.guests).toFixed(2)} DH</div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div>{getStatusBadge(booking.status)}</div>
                       {booking.status === 'pending' && (
-                        <div className="flex justify-end gap-2">
+                        <div className="flex gap-2">
                           <Button
                             size="sm"
                             onClick={() => updateBookingStatus(booking.id, 'confirmed')}
@@ -194,14 +229,78 @@ export default function BookingsPage() {
                           size="sm"
                           onClick={() => updateBookingStatus(booking.id, 'completed')}
                         >
-                          Mark Complete
+                          Complete
                         </Button>
                       )}
-                    </TableCell>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table layout */}
+            <div className="hidden lg:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Activity</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Guests</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredBookings.map((booking) => (
+                    <TableRow key={booking.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{booking.client_name}</div>
+                          <div className="text-sm text-muted-foreground">{booking.client_email}</div>
+                          <div className="text-sm text-muted-foreground">{booking.client_phone}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[150px] truncate">
+                        {booking.activity?.title}
+                      </TableCell>
+                      <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
+                      <TableCell>{booking.guests}</TableCell>
+                      <TableCell>{(booking.activity?.price * booking.guests).toFixed(2)} DH</TableCell>
+                      <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                      <TableCell className="text-right">
+                        {booking.status === 'pending' && (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                        {booking.status === 'confirmed' && (
+                          <Button
+                            size="sm"
+                            onClick={() => updateBookingStatus(booking.id, 'completed')}
+                          >
+                            Complete
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}

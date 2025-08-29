@@ -1,4 +1,3 @@
-// Owner Dashboard Page (page.js)
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -59,7 +58,7 @@ export default function OwnerDashboard() {
     };
 
     return (
-      <Badge variant={variants[status] || 'secondary'} className="flex items-center">
+      <Badge variant={variants[status] || 'secondary'} className="flex items-center text-xs">
         {icons[status]}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
@@ -75,26 +74,26 @@ export default function OwnerDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard Overview</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Dashboard Overview</h1>
           <p className="text-muted-foreground">Welcome back! Here's your business overview</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => router.push('/owner/activities/new')}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button onClick={() => router.push('/owner/activities/new')} className="w-full sm:w-auto">
             <PlusCircle className="w-4 h-4 mr-2" />
             New Activity
           </Button>
-          <Button variant="outline" onClick={() => window.location.reload()}>
+          <Button variant="outline" onClick={() => window.location.reload()} className="w-full sm:w-auto">
             <TrendingUp className="w-4 h-4 mr-2" />
             Refresh
           </Button>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid - Responsive */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -156,10 +155,10 @@ export default function OwnerDashboard() {
         </Card>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        {/* Recent Bookings Section */}
-        <Card className="col-span-4">
+      {/* Main Content Grid - Responsive */}
+      <div className="grid gap-6 lg:grid-cols-7">
+        {/* Recent Bookings Section - Takes 4/7 on large screens */}
+        <Card className="lg:col-span-4">
           <CardHeader>
             <CardTitle>Recent Bookings</CardTitle>
             <CardDescription>
@@ -168,37 +167,63 @@ export default function OwnerDashboard() {
           </CardHeader>
           <CardContent>
             {dashboardData?.recent_bookings?.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Activity</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Guests</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Mobile card layout */}
+                <div className="block lg:hidden space-y-4">
                   {dashboardData.recent_bookings.map((booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell>
+                    <div key={booking.id} className="bg-gray-50 rounded-lg p-4">
+                      <div className="space-y-3">
                         <div>
                           <div className="font-medium">{booking.client_name}</div>
                           <div className="text-sm text-muted-foreground">{booking.client_email}</div>
                         </div>
-                      </TableCell>
-                      <TableCell className="max-w-[150px] truncate">
-                        {booking.activity?.title}
-                      </TableCell>
-                      <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
-                      <TableCell>{booking.guests}</TableCell>
-                      <TableCell>{(booking.activity?.price * booking.guests).toFixed(2)} DH</TableCell>
-                      <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                    </TableRow>
+                        <div className="text-sm">
+                          <div className="truncate">Activity: {booking.activity?.title}</div>
+                          <div>Date: {new Date(booking.date).toLocaleDateString()}</div>
+                          <div>Guests: {booking.guests}</div>
+                          <div>Amount: {(booking.activity?.price * booking.guests).toFixed(2)} DH</div>
+                        </div>
+                        <div>{getStatusBadge(booking.status)}</div>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+
+                {/* Desktop table layout */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Client</TableHead>
+                        <TableHead>Activity</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Guests</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dashboardData.recent_bookings.map((booking) => (
+                        <TableRow key={booking.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{booking.client_name}</div>
+                              <div className="text-sm text-muted-foreground">{booking.client_email}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[150px] truncate">
+                            {booking.activity?.title}
+                          </TableCell>
+                          <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
+                          <TableCell>{booking.guests}</TableCell>
+                          <TableCell>{(booking.activity?.price * booking.guests).toFixed(2)} DH</TableCell>
+                          <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             ) : (
               <div className="text-center py-8">
                 <Calendar className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -211,8 +236,8 @@ export default function OwnerDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions & Recent Activities */}
-        <div className="col-span-3 space-y-6">
+        {/* Quick Actions & Recent Activities - Takes 3/7 on large screens */}
+        <div className="lg:col-span-3 space-y-6">
           {/* Quick Actions */}
           <Card>
             <CardHeader>

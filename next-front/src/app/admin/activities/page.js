@@ -19,11 +19,12 @@ import {
   Calendar,
   Users as UsersIcon,
   Filter,
-  Tag
+  Tag,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import api from '@/lib/axios';
 import { toast } from 'react-toastify';
-import Image from 'next/image';
 
 export default function ActivitiesManagement() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function ActivitiesManagement() {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchActivities();
@@ -117,20 +119,20 @@ export default function ActivitiesManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Activities Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Activities Management</h1>
           <p className="text-muted-foreground">Manage all activities on the platform</p>
         </div>
-        <Button onClick={fetchActivities} variant="outline">
+        <Button onClick={fetchActivities} variant="outline" className="w-full sm:w-auto">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Cards - Responsive Grid */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Activities</CardTitle>
@@ -172,7 +174,7 @@ export default function ActivitiesManagement() {
             <Filter className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="md:text-2xl font-bold text-sm">
               {Object.keys(categoryCounts).length > 0 
                 ? Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0][0] 
                 : 'None'
@@ -185,31 +187,46 @@ export default function ActivitiesManagement() {
 
       {/* Filters and Search */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search activities by title, location, or owner..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div className="flex gap-2">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium">Filters</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden"
+                onClick={() => setShowFilters(!showFilters)}
               >
-                <option value="all">All Categories</option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name} ({categoryCounts[category.name] || 0})
-                  </option>
-                ))}
-              </select>
+                <Filter className="w-4 h-4 mr-1" />
+                {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </div>
+            
+            <div className={`flex flex-col lg:flex-row gap-4 ${showFilters ? 'flex' : 'hidden lg:flex'}`}>
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search activities..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
+                />
+              </div>
+              <div className="w-full lg:w-auto">
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="w-full lg:w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base"
+                >
+                  <option value="all">All Categories</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name} ({categoryCounts[category.name] || 0})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -217,15 +234,15 @@ export default function ActivitiesManagement() {
 
       {/* Activities Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="px-4 sm:px-6">
           <CardTitle>Activities List</CardTitle>
           <CardDescription>
             {filteredActivities.length} activit{filteredActivities.length !== 1 ? 'ies' : 'y'} found
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 sm:px-6">
           {filteredActivities.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12 px-4">
               <Package className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-4 text-lg font-semibold">No activities found</h3>
               <p className="text-muted-foreground">
@@ -236,60 +253,96 @@ export default function ActivitiesManagement() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Activity</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile card layout */}
+              <div className="block lg:hidden space-y-4">
                 {filteredActivities.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell>
-                      <div className="font-medium">{activity.title}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {activity.duration}
+                  <div key={activity.id} className="bg-gray-50 rounded-lg p-4">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="font-medium">{activity.title}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {activity.category.name} • {activity.owner.name}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {activity.location}
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{activity.category.name}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div>{activity.owner.name}</div>
-                      <div className="text-sm text-muted-foreground">{activity.owner.email}</div>
-                    </TableCell>
-                    <TableCell className="max-w-[150px] truncate">
-                      {activity.location}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{activity.price} DH</div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => fetchActivityDetails(activity.id)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">{activity.price} DH</div>
+                        <Badge variant="outline" className="text-xs">{activity.category.name}</Badge>
+                      </div>
+                      <div className="pt-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => fetchActivityDetails(activity.id)}
+                          className="w-full"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop table layout */}
+              <div className="hidden lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="px-4 py-3">Activity</TableHead>
+                      <TableHead className="px-4 py-3">Category</TableHead>
+                      <TableHead className="px-4 py-3">Owner</TableHead>
+                      <TableHead className="px-4 py-3">Location</TableHead>
+                      <TableHead className="px-4 py-3">Price</TableHead>
+                      <TableHead className="px-4 py-3 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredActivities.map((activity) => (
+                      <TableRow key={activity.id}>
+                        <TableCell className="px-4 py-3">
+                          <div className="font-medium">{activity.title}</div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <Badge variant="outline">{activity.category.name}</Badge>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <div>{activity.owner.name}</div>
+                          <div className="text-xs text-muted-foreground">{activity.owner.email}</div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3 max-w-[150px] truncate">
+                          {activity.location}
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <div className="font-medium">{activity.price} DH</div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3 text-right">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => fetchActivityDetails(activity.id)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Activity Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto mx-4">
           {selectedActivity && (
             <>
               <DialogHeader>
@@ -302,13 +355,12 @@ export default function ActivitiesManagement() {
               <div className="grid gap-6 py-4">
                 {/* Images */}
                 {selectedActivity.image_urls && selectedActivity.image_urls.length > 0 && (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {selectedActivity.image_urls.map((url, index) => (
                       <div key={index} className="relative h-40 rounded-md overflow-hidden">
-                        <Image
+                        <img
                           src={url}
                           alt={`${selectedActivity.title} image ${index + 1}`}
-                          fill
                           className="object-cover"
                         />
                       </div>
@@ -316,7 +368,7 @@ export default function ActivitiesManagement() {
                   </div>
                 )}
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-medium mb-2">Activity Information</h4>
                     <div className="space-y-2 text-sm">
@@ -371,7 +423,7 @@ export default function ActivitiesManagement() {
                 {selectedActivity.bookings && selectedActivity.bookings.length > 0 && (
                   <div>
                     <h4 className="font-medium mb-2">Recent Bookings</h4>
-                    <div className="border rounded-md">
+                    <div className="border rounded-md overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -413,8 +465,8 @@ export default function ActivitiesManagement() {
                 )}
               </div>
               
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDetailDialogOpen(false)}>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button variant="outline" onClick={() => setDetailDialogOpen(false)} className="w-full sm:w-auto">
                   Close
                 </Button>
               </DialogFooter>

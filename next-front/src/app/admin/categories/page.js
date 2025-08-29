@@ -16,7 +16,10 @@ import {
   Search,
   RefreshCw,
   AlertCircle,
-  Package
+  Package,
+  Filter,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import api from '@/lib/axios';
 import { toast } from 'react-toastify';
@@ -34,6 +37,7 @@ export default function CategoriesManagement() {
     name: ''
   });
   const [formErrors, setFormErrors] = useState({});
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -135,11 +139,11 @@ export default function CategoriesManagement() {
 
   const getActivityCountBadge = (count) => {
     if (count === 0) {
-      return <Badge variant="outline">No activities</Badge>;
+      return <Badge variant="outline" className="text-xs">No activities</Badge>;
     } else if (count === 1) {
-      return <Badge variant="secondary">1 activity</Badge>;
+      return <Badge variant="secondary" className="text-xs">1 activity</Badge>;
     } else {
-      return <Badge variant="secondary">{count} activities</Badge>;
+      return <Badge variant="secondary" className="text-xs">{count} activities</Badge>;
     }
   };
 
@@ -152,25 +156,25 @@ export default function CategoriesManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Categories Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Categories Management</h1>
           <p className="text-muted-foreground">Manage activity categories on the platform</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={fetchCategories} variant="outline">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button onClick={fetchCategories} variant="outline" className="w-full sm:w-auto">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Category
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[425px] mx-4">
               <DialogHeader>
                 <DialogTitle>Create New Category</DialogTitle>
                 <DialogDescription>
@@ -193,11 +197,11 @@ export default function CategoriesManagement() {
                     )}
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="w-full sm:w-auto">
                     Cancel
                   </Button>
-                  <Button type="submit">Create Category</Button>
+                  <Button type="submit" className="w-full sm:w-auto">Create Category</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -205,8 +209,8 @@ export default function CategoriesManagement() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Stats Cards - Responsive Grid */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Categories</CardTitle>
@@ -237,7 +241,7 @@ export default function CategoriesManagement() {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="md:text-2xl font-bold text-sm">
               {categories.length > 0 
                 ? categories.reduce((max, category) => 
                     category.activities_count > max.activities_count ? category : max
@@ -252,31 +256,48 @@ export default function CategoriesManagement() {
 
       {/* Search */}
       <Card>
-        <CardContent className="p-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search categories by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium">Filters</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Filter className="w-4 h-4 mr-1" />
+                {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </div>
+            
+            <div className={`${showFilters ? 'flex' : 'hidden lg:flex'}`}>
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search categories by name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Categories Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="px-4 sm:px-6">
           <CardTitle>Categories List</CardTitle>
           <CardDescription>
             {filteredCategories.length} categor{filteredCategories.length !== 1 ? 'ies' : 'y'} found
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 sm:px-6">
           {filteredCategories.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12 px-4">
               <Tag className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-4 text-lg font-semibold">No categories found</h3>
               <p className="text-muted-foreground">
@@ -287,31 +308,25 @@ export default function CategoriesManagement() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Activities</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile card layout */}
+              <div className="block lg:hidden space-y-4">
                 {filteredCategories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell className="font-medium">{category.name}</TableCell>
-                    <TableCell>
-                      {getActivityCountBadge(category.activities_count)}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(category.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                  <div key={category.id} className="bg-gray-50 rounded-lg p-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div className="font-medium">{category.name}</div>
+                        {getActivityCountBadge(category.activities_count)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Created: {new Date(category.created_at).toLocaleDateString()}
+                      </div>
+                      <div className="flex gap-2 pt-2">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => openEditDialog(category)}
+                          className="flex-1"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -320,22 +335,69 @@ export default function CategoriesManagement() {
                           variant="destructive"
                           onClick={() => openDeleteDialog(category)}
                           disabled={category.activities_count > 0}
+                          className="flex-1"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop table layout */}
+              <div className="hidden lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Activities</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCategories.map((category) => (
+                      <TableRow key={category.id}>
+                        <TableCell className="font-medium">{category.name}</TableCell>
+                        <TableCell>
+                          {getActivityCountBadge(category.activities_count)}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(category.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditDialog(category)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => openDeleteDialog(category)}
+                              disabled={category.activities_count > 0}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Edit Category Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] mx-4">
           <DialogHeader>
             <DialogTitle>Edit Category</DialogTitle>
             <DialogDescription>
@@ -358,11 +420,11 @@ export default function CategoriesManagement() {
                 )}
               </div>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button type="submit">Update Category</Button>
+              <Button type="submit" className="w-full sm:w-auto">Update Category</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -370,7 +432,7 @@ export default function CategoriesManagement() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] mx-4">
           <DialogHeader>
             <DialogTitle>Delete Category</DialogTitle>
             <DialogDescription>
@@ -381,7 +443,7 @@ export default function CategoriesManagement() {
           {selectedCategory?.activities_count > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
               <div className="flex">
-                <AlertCircle className="h-5 w-5 text-yellow-400 mr-3" />
+                <AlertCircle className="h-5 w-5 text-yellow-400 mr-3 flex-shrink-0" />
                 <div className="text-yellow-700">
                   <p className="font-medium">Cannot delete category</p>
                   <p className="text-sm">
@@ -392,14 +454,15 @@ export default function CategoriesManagement() {
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
             <Button 
               variant="destructive" 
               onClick={handleDelete}
               disabled={selectedCategory?.activities_count > 0}
+              className="w-full sm:w-auto"
             >
               Delete Category
             </Button>

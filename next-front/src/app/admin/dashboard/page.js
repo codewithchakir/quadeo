@@ -21,7 +21,9 @@ import {
   CreditCard as CreditCardIcon,
   AlertCircle,
   CheckCircle,
-  Clock
+  Clock,
+  MoreHorizontal,
+  Eye
 } from 'lucide-react';
 import api from '@/lib/axios';
 import { toast } from 'react-toastify';
@@ -130,20 +132,20 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-muted-foreground">Welcome back! Here's your platform overview</p>
         </div>
-        <Button onClick={() => window.location.reload()} variant="outline">
+        <Button onClick={() => window.location.reload()} variant="outline" className="w-full sm:w-auto">
           <TrendingUp className="w-4 h-4 mr-2" />
           Refresh Data
         </Button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid - Responsive */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -210,10 +212,10 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        {/* Recent Activities Section */}
-        <Card className="col-span-4">
+      {/* Main Content Grid - Stack on mobile, side by side on larger screens */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Recent Activities Section - Takes 2/3 on large screens */}
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Recent Activities</CardTitle>
             <CardDescription>
@@ -221,33 +223,51 @@ export default function AdminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Activity</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Location</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {dashboardData?.recent_activities?.slice(0, 5).map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell className="font-medium">{activity.title}</TableCell>
-                    <TableCell>{activity.owner?.name}</TableCell>
-                    <TableCell>{activity.category?.name}</TableCell>
-                    <TableCell>{activity.price} DH</TableCell>
-                    <TableCell className="max-w-[120px] truncate">{activity.location}</TableCell>
+            {/* Mobile card layout */}
+            <div className="block md:hidden space-y-4">
+              {dashboardData?.recent_activities?.slice(0, 5).map((activity) => (
+                <div key={activity.id} className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="font-medium truncate">{activity.title}</div>
+                  <div className="text-sm text-muted-foreground">
+                    <div>Owner: {activity.owner?.name}</div>
+                    <div>Category: {activity.category?.name}</div>
+                    <div>Price: {activity.price} DH</div>
+                    <div className="truncate">Location: {activity.location}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table layout */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[150px]">Activity</TableHead>
+                    <TableHead className="min-w-[120px]">Owner</TableHead>
+                    <TableHead className="min-w-[100px]">Category</TableHead>
+                    <TableHead className="min-w-[80px]">Price</TableHead>
+                    <TableHead className="min-w-[150px]">Location</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {dashboardData?.recent_activities?.slice(0, 5).map((activity) => (
+                    <TableRow key={activity.id}>
+                      <TableCell className="font-medium">{activity.title}</TableCell>
+                      <TableCell>{activity.owner?.name}</TableCell>
+                      <TableCell>{activity.category?.name}</TableCell>
+                      <TableCell>{activity.price} DH</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{activity.location}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Right Sidebar */}
-        <Card className="col-span-3">
+        {/* Right Sidebar - Takes 1/3 on large screens */}
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Quick Stats</CardTitle>
             <CardDescription>
@@ -259,11 +279,11 @@ export default function AdminDashboard() {
             <div>
               <h4 className="text-sm font-medium mb-3">Category Distribution</h4>
               <div className="space-y-3">
-                {statsData?.category_stats?.map((category) => (
+                {statsData?.category_stats?.slice(0, 5).map((category) => (
                   <div key={category.id} className="space-y-1">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{category.name}</span>
-                      <span>{category.activities_count} activities</span>
+                      <span className="text-muted-foreground truncate">{category.name}</span>
+                      <span className="flex-shrink-0 ml-2">{category.activities_count}</span>
                     </div>
                     <Progress 
                       value={(category.activities_count / dashboardData?.stats?.total_activities) * 100} 
@@ -294,8 +314,8 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Bottom Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* Bottom Grid - Stack on mobile */}
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Pending Owners Section */}
         <Card>
           <CardHeader>
@@ -314,26 +334,24 @@ export default function AdminDashboard() {
                 </p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Registered</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Mobile card layout for pending owners */}
+                <div className="block lg:hidden space-y-4">
                   {pendingOwners.slice(0, 3).map((owner) => (
-                    <TableRow key={owner.id}>
-                      <TableCell className="font-medium">{owner.name}</TableCell>
-                      <TableCell>{owner.email}</TableCell>
-                      <TableCell>{new Date(owner.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                    <div key={owner.id} className="bg-gray-50 rounded-lg p-4">
+                      <div className="space-y-3">
+                        <div>
+                          <div className="font-medium">{owner.name}</div>
+                          <div className="text-sm text-muted-foreground">{owner.email}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Registered: {new Date(owner.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
                           <Button
                             size="sm"
                             variant="default"
+                            className="flex-1"
                             onClick={() => {
                               setSelectedOwner(owner);
                               setApproveDialogOpen(true);
@@ -345,6 +363,7 @@ export default function AdminDashboard() {
                           <Button
                             size="sm"
                             variant="destructive"
+                            className="flex-1"
                             onClick={() => {
                               setSelectedOwner(owner);
                               setRejectDialogOpen(true);
@@ -354,11 +373,60 @@ export default function AdminDashboard() {
                             Reject
                           </Button>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+
+                {/* Desktop table layout */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Registered</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingOwners.slice(0, 3).map((owner) => (
+                        <TableRow key={owner.id}>
+                          <TableCell className="font-medium">{owner.name}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{owner.email}</TableCell>
+                          <TableCell>{new Date(owner.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => {
+                                  setSelectedOwner(owner);
+                                  setApproveDialogOpen(true);
+                                }}
+                              >
+                                <UserCheck className="w-4 h-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  setSelectedOwner(owner);
+                                  setRejectDialogOpen(true);
+                                }}
+                              >
+                                <UserX className="w-4 h-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
             {pendingOwners.length > 3 && (
               <div className="mt-4 text-center">
@@ -379,31 +447,51 @@ export default function AdminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Activity</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {dashboardData?.recent_bookings?.slice(0, 3).map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-medium">
-                      <div>
-                        <div>{booking.client_name}</div>
-                        <div className="text-sm text-muted-foreground">{booking.client_email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-[150px] truncate">{booking.activity?.title}</TableCell>
-                    <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
-                    <TableCell>{(booking.activity?.price * booking.guests).toFixed(2)} DH</TableCell>
+            {/* Mobile card layout for bookings */}
+            <div className="block lg:hidden space-y-4">
+              {dashboardData?.recent_bookings?.slice(0, 3).map((booking) => (
+                <div key={booking.id} className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div>
+                    <div className="font-medium">{booking.client_name}</div>
+                    <div className="text-sm text-muted-foreground">{booking.client_email}</div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="truncate">Activity: {booking.activity?.title}</div>
+                    <div>Date: {new Date(booking.date).toLocaleDateString()}</div>
+                    <div>Amount: {(booking.activity?.price * booking.guests).toFixed(2)} DH</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table layout */}
+            <div className="hidden lg:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Activity</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Amount</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {dashboardData?.recent_bookings?.slice(0, 3).map((booking) => (
+                    <TableRow key={booking.id}>
+                      <TableCell className="font-medium">
+                        <div>
+                          <div>{booking.client_name}</div>
+                          <div className="text-sm text-muted-foreground truncate max-w-[150px]">{booking.client_email}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[150px] truncate">{booking.activity?.title}</TableCell>
+                      <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
+                      <TableCell>{(booking.activity?.price * booking.guests).toFixed(2)} DH</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
             {dashboardData?.recent_bookings?.length > 3 && (
               <div className="mt-4 text-center">
                 <Button variant="outline" onClick={() => router.push('/admin/bookings')}>
@@ -417,18 +505,18 @@ export default function AdminDashboard() {
 
       {/* Approve Confirmation Dialog */}
       <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] mx-4">
           <DialogHeader>
             <DialogTitle>Approve Owner</DialogTitle>
             <DialogDescription>
               Are you sure you want to approve {selectedOwner?.name}? This will grant them full access to the owner dashboard.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setApproveDialogOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setApproveDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button onClick={() => handleApprove(selectedOwner?.id)}>
+            <Button onClick={() => handleApprove(selectedOwner?.id)} className="w-full sm:w-auto">
               <UserCheck className="w-4 h-4 mr-2" />
               Approve Owner
             </Button>
@@ -438,18 +526,18 @@ export default function AdminDashboard() {
 
       {/* Reject Confirmation Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] mx-4">
           <DialogHeader>
             <DialogTitle>Reject Owner</DialogTitle>
             <DialogDescription>
               Are you sure you want to reject {selectedOwner?.name}? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={() => handleReject(selectedOwner?.id)}>
+            <Button variant="destructive" onClick={() => handleReject(selectedOwner?.id)} className="w-full sm:w-auto">
               <UserX className="w-4 h-4 mr-2" />
               Reject Owner
             </Button>

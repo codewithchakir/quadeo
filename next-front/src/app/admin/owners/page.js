@@ -16,7 +16,10 @@ import {
   CheckCircle,
   Clock,
   Search,
-  RefreshCw
+  RefreshCw,
+  Filter,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import api from '@/lib/axios';
 import { toast } from 'react-toastify';
@@ -31,6 +34,7 @@ export default function OwnersManagement() {
   const [selectedOwner, setSelectedOwner] = useState(null);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchOwners();
@@ -109,7 +113,7 @@ export default function OwnersManagement() {
     };
 
     return (
-      <Badge variant={variants[status] || 'secondary'} className="flex items-center">
+      <Badge variant={variants[status] || 'secondary'} className="flex items-center text-xs">
         {icons[status]}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
@@ -136,20 +140,20 @@ export default function OwnersManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Owners Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Owners Management</h1>
           <p className="text-muted-foreground">Manage activity provider accounts</p>
         </div>
-        <Button onClick={fetchOwners} variant="outline">
+        <Button onClick={fetchOwners} variant="outline" className="w-full sm:w-auto">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Cards - Responsive Grid */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Owners</CardTitle>
@@ -197,29 +201,44 @@ export default function OwnersManagement() {
 
       {/* Filters and Search */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search owners by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div className="flex gap-2">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium">Filters</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden"
+                onClick={() => setShowFilters(!showFilters)}
               >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
+                <Filter className="w-4 h-4 mr-1" />
+                {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </div>
+            
+            <div className={`flex flex-col lg:flex-row gap-4 ${showFilters ? 'flex' : 'hidden lg:flex'}`}>
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search owners by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full lg:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -246,42 +265,35 @@ export default function OwnersManagement() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Registered</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile card layout */}
+              <div className="block lg:hidden space-y-4">
                 {filteredOwners.map((owner) => (
-                  <TableRow key={owner.id}>
-                    <TableCell>
-                      <div className="font-medium">{owner.name}</div>
-                      <div className="text-sm text-muted-foreground">ID: {owner.id}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div>{owner.email}</div>
-                      {owner.phone && (
-                        <div className="text-sm text-muted-foreground">{owner.phone}</div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(owner.status)}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(owner.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                  <div key={owner.id} className="bg-gray-50 rounded-lg p-4">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="font-medium">{owner.name}</div>
+                        <div className="text-sm text-muted-foreground">ID: {owner.id}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm">{owner.email}</div>
+                        {owner.phone && (
+                          <div className="text-sm text-muted-foreground">{owner.phone}</div>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div>{getStatusBadge(owner.status)}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(owner.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-2">
                         {owner.status === 'pending' && (
                           <>
                             <Button
                               size="sm"
                               variant="default"
+                              className="flex-1"
                               onClick={() => {
                                 setSelectedOwner(owner);
                                 setApproveDialogOpen(true);
@@ -293,6 +305,7 @@ export default function OwnersManagement() {
                             <Button
                               size="sm"
                               variant="destructive"
+                              className="flex-1"
                               onClick={() => {
                                 setSelectedOwner(owner);
                                 setRejectDialogOpen(true);
@@ -304,35 +317,108 @@ export default function OwnersManagement() {
                           </>
                         )}
                         {owner.status !== 'pending' && (
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" className="flex-1">
                             <Eye className="w-4 h-4 mr-1" />
                             View
                           </Button>
                         )}
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop table layout */}
+              <div className="hidden lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Owner</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Registered</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOwners.map((owner) => (
+                      <TableRow key={owner.id}>
+                        <TableCell>
+                          <div className="font-medium">{owner.name}</div>
+                          <div className="text-sm text-muted-foreground">ID: {owner.id}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div>{owner.email}</div>
+                          {owner.phone && (
+                            <div className="text-sm text-muted-foreground">{owner.phone}</div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(owner.status)}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(owner.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            {owner.status === 'pending' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => {
+                                    setSelectedOwner(owner);
+                                    setApproveDialogOpen(true);
+                                  }}
+                                >
+                                  <UserCheck className="w-4 h-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    setSelectedOwner(owner);
+                                    setRejectDialogOpen(true);
+                                  }}
+                                >
+                                  <UserX className="w-4 h-4 mr-1" />
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                            {owner.status !== 'pending' && (
+                              <Button size="sm" variant="outline">
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Approve Confirmation Dialog */}
       <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] mx-4">
           <DialogHeader>
             <DialogTitle>Approve Owner</DialogTitle>
             <DialogDescription>
               Are you sure you want to approve {selectedOwner?.name}? This will grant them full access to the owner dashboard.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setApproveDialogOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setApproveDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button onClick={() => handleApprove(selectedOwner?.id)}>
+            <Button onClick={() => handleApprove(selectedOwner?.id)} className="w-full sm:w-auto">
               <UserCheck className="w-4 h-4 mr-2" />
               Approve Owner
             </Button>
@@ -342,18 +428,18 @@ export default function OwnersManagement() {
 
       {/* Reject Confirmation Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] mx-4">
           <DialogHeader>
             <DialogTitle>Reject Owner</DialogTitle>
             <DialogDescription>
               Are you sure you want to reject {selectedOwner?.name}? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={() => handleReject(selectedOwner?.id)}>
+            <Button variant="destructive" onClick={() => handleReject(selectedOwner?.id)} className="w-full sm:w-auto">
               <UserX className="w-4 h-4 mr-2" />
               Reject Owner
             </Button>
